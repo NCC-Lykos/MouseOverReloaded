@@ -1,0 +1,10 @@
+## Interface: 20500
+## Title: MouseOverReloaded
+## Author: phys1ks
+## Notes: Create macros right from the spellbook.
+## Version: 0.1
+## SavedVariables: MouseOverVars
+
+
+embeds.xml
+MouseOverReloaded.lua

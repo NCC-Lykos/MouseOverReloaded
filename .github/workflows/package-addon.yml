@@ -1,0 +1,64 @@
+name: Package WoW Addon
+
+on:
+  release:
+    types: [published]  # Runs only when you publish a GitHub Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ✅ Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ✅ Step 2: Extract Release version (tag)
+      - name: Get release version
+        id: get_version
+        run: |
+          echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+
+      # ✅ Step 3: Update version in .toc file
+      - name: Update .toc version
+        run: |
+          TOC_FILE="src/MouseOverReloaded/MouseOverReloaded.toc"
+          VERSION="${{ steps.get_version.outputs.version }}"
+          echo "Updating TOC to version: $VERSION"
+          # Replace the first line with Version: <version> if it exists, else add it
+          if grep -q "^## Version:" "$TOC_FILE"; then
+            sed -i "s/^## Version:.*/## Version: $VERSION/" "$TOC_FILE"
+          else
+            echo "## Version: $VERSION" >> "$TOC_FILE"
+          fi
+
+      # ✅ Step 4: Create packaging folder and copy files
+      - name: Prepare Addon package
+        run: |
+          mkdir build
+          cp -r src/MouseOverReloaded build/
+          cp LICENSE build/MouseOverReloaded/
+          cp README.md build/MouseOverReloaded/
+
+      # ✅ Step 5: Create ZIP archive
+      - name: Create ZIP Archive
+        run: |
+          cd build
+          zip -r MouseOverReloaded.zip MouseOverReloaded
+          ls -lh
+
+      # ✅ Step 6: Generate changelog from commits
+      - name: Generate Changelog
+        id: changelog
+        uses: metcalfc/changelog-generator@v4.0.1
+        with:
+          myToken: ${{ secrets.GITHUB_TOKEN }}
+
+      # ✅ Step 7: Upload ZIP to GitHub Release
+      - name: Upload ZIP to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/MouseOverReloaded.zip
+          body: ${{ steps.changelog.outputs.changelog }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
