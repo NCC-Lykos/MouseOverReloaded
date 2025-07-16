@@ -1,60 +1,71 @@
-name: Package WoW Addon
+name: Package WoW Addon (Classic & Retail)
 
 on:
   release:
-    types: [published]  # Runs only when you publish a GitHub Release
+    types: [published]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # ✅ Step 1: Checkout the repository
+      # ✅ Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ✅ Step 2: Extract Release version (tag)
-      - name: Get release version
-        id: get_version
+      # ✅ Step 2: Determine version and source path
+      - name: Parse version and source path
+        id: parse
         run: |
-          echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+          TAG="${GITHUB_REF##*/}"
+          if [[ "$TAG" == C:* ]]; then
+            VERSION="${TAG#C:}"
+            SOURCE="src/classic/MouseOverReloaded"
+          elif [[ "$TAG" == R:* ]]; then
+            VERSION="${TAG#R:}"
+            SOURCE="src/retail/MouseOverReloaded"
+          else
+            echo "Invalid tag format! Use C:x.x.x or R:x.x.x"
+            exit 1
+          fi
 
-      # ✅ Step 3: Update version in .toc file
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "source=$SOURCE" >> $GITHUB_OUTPUT
+
+      # ✅ Step 3: Update .toc version
       - name: Update .toc version
         run: |
-          TOC_FILE="src/MouseOverReloaded/MouseOverReloaded.toc"
-          VERSION="${{ steps.get_version.outputs.version }}"
-          echo "Updating TOC to version: $VERSION"
-          # Replace the first line with Version: <version> if it exists, else add it
+          TOC_FILE="${{ steps.parse.outputs.source }}/MouseOverReloaded.toc"
+          VERSION="${{ steps.parse.outputs.version }}"
+          echo "Updating $TOC_FILE to version: $VERSION"
           if grep -q "^## Version:" "$TOC_FILE"; then
             sed -i "s/^## Version:.*/## Version: $VERSION/" "$TOC_FILE"
           else
             echo "## Version: $VERSION" >> "$TOC_FILE"
           fi
 
-      # ✅ Step 4: Create packaging folder and copy files
+      # ✅ Step 4: Prepare Addon package (no README)
       - name: Prepare Addon package
         run: |
           mkdir build
-          cp -r src/MouseOverReloaded build/
+          cp -r "${{ steps.parse.outputs.source }}" build/
           cp LICENSE build/MouseOverReloaded/
-          cp README.md build/MouseOverReloaded/
 
-      # ✅ Step 5: Create ZIP archive
-      - name: Create ZIP Archive
+      # ✅ Step 5: Create ZIP
+      - name: Create ZIP
         run: |
           cd build
           zip -r MouseOverReloaded.zip MouseOverReloaded
           ls -lh
 
-      # ✅ Step 6: Generate changelog from commits
+      # ✅ Step 6: Generate Changelog
       - name: Generate Changelog
         id: changelog
         uses: metcalfc/changelog-generator@v4.0.1
         with:
           myToken: ${{ secrets.GITHUB_TOKEN }}
 
-      # ✅ Step 7: Upload ZIP to GitHub Release
+      # ✅ Step 7: Upload ZIP
       - name: Upload ZIP to Release
         uses: softprops/action-gh-release@v1
         with:

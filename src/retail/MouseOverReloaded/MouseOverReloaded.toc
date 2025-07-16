@@ -1,0 +1,9 @@
+## Interface: 110000
+## Title: MouseOverReloaded
+## Author: Lykos
+## Notes: Create macros right from the spellbook.
+## Version: 0.1
+## SavedVariables: MouseOverVars
+
+embeds.xml
+MouseOverReloaded.lua
