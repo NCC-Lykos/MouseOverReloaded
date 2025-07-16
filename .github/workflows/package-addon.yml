@@ -18,14 +18,14 @@ jobs:
         id: parse
         run: |
           TAG="${GITHUB_REF##*/}"
-          if [[ "$TAG" == C:* ]]; then
-            VERSION="${TAG#C:}"
+          if [[ "$TAG" == C-* ]]; then
+            VERSION="${TAG#C-}"
             SOURCE="src/classic/MouseOverReloaded"
-          elif [[ "$TAG" == R:* ]]; then
-            VERSION="${TAG#R:}"
+          elif [[ "$TAG" == R-* ]]; then
+            VERSION="${TAG#R-}"
             SOURCE="src/retail/MouseOverReloaded"
           else
-            echo "Invalid tag format! Use C:x.x.x or R:x.x.x"
+            echo "Invalid tag format! Use C-x.x.x or R-x.x.x"
             exit 1
           fi
 
