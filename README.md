@@ -6,7 +6,7 @@
 
 ## 🔹 What is This?
 Struggling with making macros? Want a **simple solution**? This addon.
-![](https://etheirys.nyc3.cdn.digitaloceanspaces.com/wow/MouseOverReloaded/Screenshot%202025-07-16%20183716.png)
+<img src="https://etheirys.nyc3.cdn.digitaloceanspaces.com/wow/MouseOverReloaded/Screenshot%202025-07-16%20183716.png" alt="MouseOverReloaded" height="400">
 ---
 
 ## ✨ Features
